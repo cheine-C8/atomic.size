@@ -92,10 +92,10 @@
             <!-- Explanation Box -->
             <div id="explanationBox" class="mb-1 p-2 rounded-xl bg-yellow-50 border border-yellow-200 transition-all duration-300">
                 <h3 class="font-bold text-sm text-yellow-800 mb-0.5" id="infoTitle">Hydrogen</h3>
-                <!-- Reduced fixed height to h-16 (4rem/64px) -->
-                <p class="text-gray-700 text-xs leading-tight h-16 flex flex-col justify-center" id="infoText">
+                <!-- Changed p to div to allow block nesting and better flex behavior -->
+                <div class="text-gray-700 text-xs leading-tight h-16 flex flex-col justify-center" id="infoText">
                     Start by moving the slider to see how size changes.
-                </p>
+                </div>
                 <div class="grid grid-cols-3 gap-1 mt-1 text-center text-xs">
                     <div class="bg-white p-1 rounded shadow-sm">
                         <div class="text-[9px] text-gray-500">Protons</div>
@@ -251,19 +251,21 @@
             let colorClass = "bg-white"; // default
 
             if (el.z === 1) {
-                explanation = "Hydrogen starts the Periodic Table. It has 1 proton and 1 electron.";
+                explanation = "<div>Hydrogen starts the Periodic Table. It has 1 proton and 1 electron.</div>";
                 colorClass = "bg-gray-100";
             } else {
                 const prevEl = elements[currentIndex - 1];
                 
                 // Check if we started a new shell (Alkali Metals usually)
                 if (el.config.length > prevEl.config.length) {
-                    explanation = `<strong>MASSIVE SPIKE IN SIZE!</strong> <br> We just added an electron to a <strong>new, empty shell</strong> further from the nucleus. <br>Even though protons increased, the new shell pushes the boundary way out.`;
+                    // Wrapped in div, removed extra BR for cleaner flow
+                    explanation = `<div><strong>MASSIVE SPIKE IN SIZE!</strong> <br> We just added an electron to a <strong>new, empty shell</strong> further from the nucleus. Even though protons increased, the new shell pushes the boundary way out.</div>`;
                     explanationBox.className = "mb-1 p-2 rounded-xl border transition-all duration-300 bg-red-50 border-red-200";
                 } 
                 // Check contraction (Same shell count, but Z increased)
                 else {
-                    explanation = `<strong>CONTRACTION (Getting Smaller)</strong> <br> We added a proton (p+) and an electron (e-), but the electron went into the <em>same</em> shell. <br>The extra proton pulls ALL the electrons in tighter due to increased attractive force.`;
+                     // Wrapped in div, removed extra BR for cleaner flow
+                    explanation = `<div><strong>CONTRACTION (Getting Smaller)</strong> <br> We added a proton (p+) and an electron (e-) into the <em>same</em> shell. The extra proton pulls ALL the electrons in tighter due to increased attractive force.</div>`;
                     explanationBox.className = "mb-1 p-2 rounded-xl border transition-all duration-300 bg-blue-50 border-blue-200";
                 }
             }
