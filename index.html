@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atomic Radius Trends Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+        }
+        canvas {
+            touch-action: none;
+        }
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        .range-slider:hover {
+            opacity: 1;
+        }
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+        .range-slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col items-center p-4">
+
+    <!-- Header -->
+    <header class="text-center mb-6 w-full max-w-4xl">
+        <h1 class="text-3xl md:text-4xl font-bold text-blue-800 mb-2">Atomic Size & Structure</h1>
+        <p class="text-gray-600">Explore how proton count and electron shells affect atomic radius.</p>
+    </header>
+
+    <!-- Main Dashboard -->
+    <div class="bg-white shadow-xl rounded-2xl w-full max-w-6xl overflow-hidden flex flex-col lg:flex-row">
+        
+        <!-- Left Panel: Atom Visualization -->
+        <div class="w-full lg:w-1/2 p-6 border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col items-center justify-center bg-gray-50 relative">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Atom Model</h2>
+            <div class="relative w-full aspect-square max-w-[400px]">
+                <canvas id="atomCanvas" width="400" height="400" class="w-full h-full"></canvas>
+                <!-- Symbol Overlay -->
+                <div id="elementSymbol" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl font-bold text-white drop-shadow-md pointer-events-none">H</div>
+            </div>
+            
+            <!-- Legend -->
+            <div class="flex gap-4 mt-4 text-sm text-gray-500">
+                <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-500 mr-2"></span> Electron (-)</div>
+                <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-red-600 mr-2"></span> Nucleus (p+/n0)</div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Data & Graph -->
+        <div class="w-full lg:w-1/2 p-6 flex flex-col">
+            
+            <!-- Controls -->
+            <div class="mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <label for="zSlider" class="flex justify-between font-bold text-gray-700 mb-2">
+                    <span>Select Atomic Number (Z)</span>
+                    <span id="zDisplay" class="text-blue-600 text-xl">1</span>
+                </label>
+                <input type="range" min="1" max="37" value="1" class="range-slider mb-4" id="zSlider">
+                
+                <div class="flex justify-between mt-2">
+                    <button id="prevBtn" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-semibold py-1 px-4 rounded shadow-sm transition">Prev</button>
+                    <button id="nextBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-4 rounded shadow-md transition">Next</button>
+                </div>
+            </div>
+
+            <!-- Explanation Box -->
+            <div id="explanationBox" class="mb-6 p-4 rounded-xl bg-yellow-50 border border-yellow-200 transition-all duration-300">
+                <h3 class="font-bold text-lg text-yellow-800 mb-1" id="infoTitle">Hydrogen</h3>
+                <p class="text-gray-700 text-sm leading-relaxed" id="infoText">
+                    Start by moving the slider to see how size changes.
+                </p>
+                <div class="grid grid-cols-3 gap-2 mt-3 text-center text-sm">
+                    <div class="bg-white p-2 rounded shadow-sm">
+                        <div class="text-xs text-gray-500">Protons</div>
+                        <div class="font-bold text-blue-600" id="statP">1</div>
+                    </div>
+                    <div class="bg-white p-2 rounded shadow-sm">
+                        <div class="text-xs text-gray-500">Electrons</div>
+                        <div class="font-bold text-blue-600" id="statE">1</div>
+                    </div>
+                    <div class="bg-white p-2 rounded shadow-sm">
+                        <div class="text-xs text-gray-500">Radius (pm)</div>
+                        <div class="font-bold text-blue-600" id="statR">53</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graph Area -->
+            <div class="flex-grow flex flex-col min-h-[250px]">
+                <h3 class="text-sm font-bold uppercase text-gray-400 mb-2 tracking-wide">Atomic Radius Trend</h3>
+                <div class="relative w-full flex-grow border border-gray-200 rounded bg-white">
+                    <canvas id="graphCanvas" class="w-full h-full"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions Footer -->
+    <div class="mt-8 max-w-3xl text-gray-500 text-sm text-center">
+        <p><strong>Note:</strong> While the atom visualization shows electrons in orbits (Bohr model) for clarity, real atoms have electron clouds. The "size" shown corresponds to the calculated atomic radius.</p>
+    </div>
+
+    <script>
+        // Data: Elements 1 (H) to 37 (Rb)
+        // Radius values are approximate calculated values in picometers to demonstrate the trend clearly.
+        const elements = [
+            { z: 1, symbol: "H", name: "Hydrogen", radius: 53, config: [1] },
+            { z: 2, symbol: "He", name: "Helium", radius: 31, config: [2] },
+            { z: 3, symbol: "Li", name: "Lithium", radius: 167, config: [2, 1] },
+            { z: 4, symbol: "Be", name: "Beryllium", radius: 112, config: [2, 2] },
+            { z: 5, symbol: "B", name: "Boron", radius: 87, config: [2, 3] },
+            { z: 6, symbol: "C", name: "Carbon", radius: 67, config: [2, 4] },
+            { z: 7, symbol: "N", name: "Nitrogen", radius: 56, config: [2, 5] },
+            { z: 8, symbol: "O", name: "Oxygen", radius: 48, config: [2, 6] },
+            { z: 9, symbol: "F", name: "Fluorine", radius: 42, config: [2, 7] },
+            { z: 10, symbol: "Ne", name: "Neon", radius: 38, config: [2, 8] },
+            { z: 11, symbol: "Na", name: "Sodium", radius: 190, config: [2, 8, 1] },
+            { z: 12, symbol: "Mg", name: "Magnesium", radius: 145, config: [2, 8, 2] },
+            { z: 13, symbol: "Al", name: "Aluminium", radius: 118, config: [2, 8, 3] },
+            { z: 14, symbol: "Si", name: "Silicon", radius: 111, config: [2, 8, 4] },
+            { z: 15, symbol: "P", name: "Phosphorus", radius: 98, config: [2, 8, 5] },
+            { z: 16, symbol: "S", name: "Sulfur", radius: 88, config: [2, 8, 6] },
+            { z: 17, symbol: "Cl", name: "Chlorine", radius: 79, config: [2, 8, 7] },
+            { z: 18, symbol: "Ar", name: "Argon", radius: 71, config: [2, 8, 8] },
+            { z: 19, symbol: "K", name: "Potassium", radius: 243, config: [2, 8, 8, 1] },
+            { z: 20, symbol: "Ca", name: "Calcium", radius: 194, config: [2, 8, 8, 2] },
+            { z: 21, symbol: "Sc", name: "Scandium", radius: 184, config: [2, 8, 9, 2] }, // Simplified config for logic
+            { z: 22, symbol: "Ti", name: "Titanium", radius: 176, config: [2, 8, 10, 2] },
+            { z: 23, symbol: "V", name: "Vanadium", radius: 171, config: [2, 8, 11, 2] },
+            { z: 24, symbol: "Cr", name: "Chromium", radius: 166, config: [2, 8, 13, 1] },
+            { z: 25, symbol: "Mn", name: "Manganese", radius: 161, config: [2, 8, 13, 2] },
+            { z: 26, symbol: "Fe", name: "Iron", radius: 156, config: [2, 8, 14, 2] },
+            { z: 27, symbol: "Co", name: "Cobalt", radius: 152, config: [2, 8, 15, 2] },
+            { z: 28, symbol: "Ni", name: "Nickel", radius: 149, config: [2, 8, 16, 2] },
+            { z: 29, symbol: "Cu", name: "Copper", radius: 145, config: [2, 8, 18, 1] },
+            { z: 30, symbol: "Zn", name: "Zinc", radius: 142, config: [2, 8, 18, 2] },
+            { z: 31, symbol: "Ga", name: "Gallium", radius: 136, config: [2, 8, 18, 3] },
+            { z: 32, symbol: "Ge", name: "Germanium", radius: 125, config: [2, 8, 18, 4] },
+            { z: 33, symbol: "As", name: "Arsenic", radius: 114, config: [2, 8, 18, 5] },
+            { z: 34, symbol: "Se", name: "Selenium", radius: 103, config: [2, 8, 18, 6] },
+            { z: 35, symbol: "Br", name: "Bromine", radius: 94, config: [2, 8, 18, 7] },
+            { z: 36, symbol: "Kr", name: "Krypton", radius: 88, config: [2, 8, 18, 8] },
+            { z: 37, symbol: "Rb", name: "Rubidium", radius: 265, config: [2, 8, 18, 8, 1] }
+        ];
+
+        // State
+        let currentIndex = 0;
+
+        // DOM Elements
+        const atomCanvas = document.getElementById('atomCanvas');
+        const graphCanvas = document.getElementById('graphCanvas');
+        const zSlider = document.getElementById('zSlider');
+        const zDisplay = document.getElementById('zDisplay');
+        const symbolDisplay = document.getElementById('elementSymbol');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const infoTitle = document.getElementById('infoTitle');
+        const infoText = document.getElementById('infoText');
+        const statP = document.getElementById('statP');
+        const statE = document.getElementById('statE');
+        const statR = document.getElementById('statR');
+        const explanationBox = document.getElementById('explanationBox');
+
+        // Contexts
+        const ctxAtom = atomCanvas.getContext('2d');
+        const ctxGraph = graphCanvas.getContext('2d');
+
+        // Setup
+        function init() {
+            // High DPI Canvas Scaling
+            scaleCanvas(atomCanvas);
+            scaleCanvas(graphCanvas);
+            
+            updateUI();
+            
+            // Listeners
+            zSlider.addEventListener('input', (e) => {
+                currentIndex = parseInt(e.target.value) - 1;
+                updateUI();
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if(currentIndex < elements.length - 1) {
+                    currentIndex++;
+                    zSlider.value = currentIndex + 1;
+                    updateUI();
+                }
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if(currentIndex > 0) {
+                    currentIndex--;
+                    zSlider.value = currentIndex + 1;
+                    updateUI();
+                }
+            });
+            
+            // Initial Draw
+            drawGraph();
+        }
+
+        function scaleCanvas(canvas) {
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+        }
+
+        // Logic & Visuals
+        function updateUI() {
+            const el = elements[currentIndex];
+            zDisplay.textContent = el.z;
+            symbolDisplay.textContent = el.symbol;
+            
+            statP.textContent = el.z;
+            statE.textContent = el.z;
+            statR.textContent = el.radius;
+            
+            infoTitle.textContent = `${el.z}. ${el.name} (${el.symbol})`;
+
+            // Logic for text explanation
+            let explanation = "";
+            let colorClass = "bg-white"; // default
+
+            if (el.z === 1) {
+                explanation = "Hydrogen starts the Periodic Table. It has 1 proton and 1 electron.";
+                colorClass = "bg-gray-100";
+            } else {
+                const prevEl = elements[currentIndex - 1];
+                
+                // Check if we started a new shell (Alkali Metals usually)
+                if (el.config.length > prevEl.config.length) {
+                    explanation = `<strong>MASSIVE SPIKE IN SIZE!</strong> <br> We just added an electron to a <strong>new, empty shell</strong> further from the nucleus. <br>Even though protons increased, the new shell pushes the boundary way out.`;
+                    explanationBox.className = "mb-6 p-4 rounded-xl border transition-all duration-300 bg-red-50 border-red-200";
+                } 
+                // Check contraction (Same shell count, but Z increased)
+                else {
+                    explanation = `<strong>CONTRACTION (Getting Smaller)</strong> <br> We added a proton (p+) and an electron (e-), but the electron went into the <em>same</em> shell. <br>The extra proton pulls ALL the electrons in tighter due to increased attractive force.`;
+                    explanationBox.className = "mb-6 p-4 rounded-xl border transition-all duration-300 bg-blue-50 border-blue-200";
+                }
+            }
+            infoText.innerHTML = explanation;
+
+            drawAtom(el);
+            drawGraph();
+        }
+
+        function drawAtom(el) {
+            const width = atomCanvas.getBoundingClientRect().width;
+            const height = atomCanvas.getBoundingClientRect().height;
+            const cx = width / 2;
+            const cy = height / 2;
+
+            ctxAtom.clearRect(0, 0, width, height);
+
+            // Draw Nucleus (Simulated Size based on Z)
+            const nucleusBaseSize = 10;
+            const nucleusGrowth = el.z * 0.5; 
+            const nucleusRadius = nucleusBaseSize + nucleusGrowth;
+
+            ctxAtom.beginPath();
+            ctxAtom.arc(cx, cy, nucleusRadius, 0, Math.PI * 2);
+            ctxAtom.fillStyle = "#dc2626"; // Red nucleus
+            ctxAtom.fill();
+            
+            // Draw Protons/Neutrons hint
+            ctxAtom.fillStyle = "#fff";
+            ctxAtom.font = "10px Arial";
+            ctxAtom.textAlign = "center";
+            ctxAtom.textBaseline = "middle";
+            // ctxAtom.fillText(`${el.z}p`, cx, cy); // Symbol overlay covers this
+
+            // Draw Shells
+            // To visualize the "Size" change, we need to map the radius (pm) to pixel radius
+            // Max radius is Rb (265pm), let's say that takes up 45% of canvas width
+            const maxPm = 270;
+            const maxPx = (width / 2) * 0.9; 
+            const scaleFactor = maxPx / maxPm;
+            
+            const currentPixelRadius = el.radius * scaleFactor;
+            
+            // We need to draw inner shells too. 
+            // If we have 3 shells, the outer one is at currentPixelRadius.
+            // Inner ones are distributed inside.
+            const shellCount = el.config.length;
+            
+            for (let i = 0; i < shellCount; i++) {
+                // Calculate shell radius. 
+                // The outermost shell (i === shellCount -1) MUST equal currentPixelRadius to show the trend.
+                // Inner shells can be evenly spaced or scaled. Let's space them relative to the outer one.
+                let thisShellRadius;
+                
+                if (i === shellCount - 1) {
+                    thisShellRadius = currentPixelRadius;
+                } else {
+                    // Inner shells are smaller. 
+                    // To keep it looking nice, let's just step down by a fixed chunk or ratio, 
+                    // but ensure they don't go inside the nucleus.
+                    const ratio = (i + 1) / shellCount;
+                    thisShellRadius = Math.max(nucleusRadius + 10, currentPixelRadius * ratio);
+                }
+
+                // Draw Orbit Line
+                ctxAtom.beginPath();
+                ctxAtom.arc(cx, cy, thisShellRadius, 0, Math.PI * 2);
+                ctxAtom.strokeStyle = (i === shellCount - 1) ? "#2563eb" : "#9ca3af"; // Outer shell is blue, inner gray
+                ctxAtom.lineWidth = (i === shellCount - 1) ? 2 : 1;
+                ctxAtom.stroke();
+
+                // Draw Electrons
+                const eCount = el.config[i];
+                for (let j = 0; j < eCount; j++) {
+                    const angle = (Math.PI * 2 * j) / eCount - (Math.PI / 2); // Start top
+                    const ex = cx + Math.cos(angle) * thisShellRadius;
+                    const ey = cy + Math.sin(angle) * thisShellRadius;
+
+                    ctxAtom.beginPath();
+                    ctxAtom.arc(ex, ey, 4, 0, Math.PI * 2);
+                    ctxAtom.fillStyle = "#3b82f6"; // Blue electron
+                    ctxAtom.fill();
+                    ctxAtom.strokeStyle = "#fff";
+                    ctxAtom.lineWidth = 1;
+                    ctxAtom.stroke();
+                }
+            }
+        }
+
+        function drawGraph() {
+            const width = graphCanvas.getBoundingClientRect().width;
+            const height = graphCanvas.getBoundingClientRect().height;
+            
+            ctxGraph.clearRect(0, 0, width, height);
+            
+            // Margins
+            const padding = 30;
+            const chartW = width - padding * 2;
+            const chartH = height - padding * 2;
+
+            // Scales
+            const maxZ = elements.length;
+            const maxR = 300; // Y axis max
+
+            const getX = (z) => padding + ((z - 1) / (maxZ - 1)) * chartW;
+            const getY = (r) => height - padding - (r / maxR) * chartH;
+
+            // Draw Axes
+            ctxGraph.beginPath();
+            ctxGraph.strokeStyle = "#ccc";
+            ctxGraph.lineWidth = 1;
+            // Y Axis
+            ctxGraph.moveTo(padding, padding);
+            ctxGraph.lineTo(padding, height - padding);
+            // X Axis
+            ctxGraph.moveTo(padding, height - padding);
+            ctxGraph.lineTo(width - padding, height - padding);
+            ctxGraph.stroke();
+
+            // Draw Line
+            ctxGraph.beginPath();
+            ctxGraph.strokeStyle = "#94a3b8";
+            ctxGraph.lineWidth = 2;
+            
+            elements.forEach((el, index) => {
+                const x = getX(el.z);
+                const y = getY(el.radius);
+                if (index === 0) ctxGraph.moveTo(x, y);
+                else ctxGraph.lineTo(x, y);
+            });
+            ctxGraph.stroke();
+
+            // Draw Points
+            elements.forEach((el, index) => {
+                const x = getX(el.z);
+                const y = getY(el.radius);
+                
+                ctxGraph.beginPath();
+                
+                // Highlight current
+                if (index === currentIndex) {
+                    ctxGraph.arc(x, y, 8, 0, Math.PI * 2);
+                    ctxGraph.fillStyle = "#2563eb"; // Blue highlight
+                    ctxGraph.fill();
+                    ctxGraph.strokeStyle = "#fff";
+                    ctxGraph.lineWidth = 2;
+                    ctxGraph.stroke();
+                    
+                    // Add Label for current
+                    ctxGraph.fillStyle = "#1e3a8a";
+                    ctxGraph.font = "bold 12px Arial";
+                    ctxGraph.fillText(`${el.radius}pm`, x + 10, y);
+                } else {
+                    // Normal dots
+                    // Color code peaks (Alkali - start of new shell)
+                    const isPeak = (el.config.length > (elements[index-1]?.config.length || 0));
+                    
+                    ctxGraph.arc(x, y, 3, 0, Math.PI * 2);
+                    ctxGraph.fillStyle = isPeak ? "#ef4444" : "#64748b"; 
+                    ctxGraph.fill();
+                }
+            });
+            
+            // Draw axis labels
+            ctxGraph.fillStyle = "#64748b";
+            ctxGraph.font = "10px Arial";
+            ctxGraph.fillText("Atomic Number (Z)", width/2 - 40, height - 5);
+            
+            ctxGraph.save();
+            ctxGraph.translate(10, height/2 + 20);
+            ctxGraph.rotate(-Math.PI/2);
+            ctxGraph.fillText("Radius (pm)", 0, 0);
+            ctxGraph.restore();
+        }
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            scaleCanvas(atomCanvas);
+            scaleCanvas(graphCanvas);
+            drawAtom(elements[currentIndex]);
+            drawGraph();
+        });
+
+        // Initialize
+        init();
+
+    </script>
+</body>
+</html>
