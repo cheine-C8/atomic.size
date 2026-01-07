@@ -16,7 +16,7 @@
         .range-slider {
             -webkit-appearance: none;
             width: 100%;
-            height: 8px; /* Slightly smaller */
+            height: 6px; /* Even smaller */
             border-radius: 5px;
             background: #d3d3d3;
             outline: none;
@@ -29,27 +29,27 @@
         .range-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px; /* Smaller thumb */
-            height: 20px;
+            width: 16px; /* Smaller thumb */
+            height: 16px;
             border-radius: 50%;
             background: #3b82f6;
             cursor: pointer;
         }
         .range-slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             background: #3b82f6;
             cursor: pointer;
         }
     </style>
 </head>
-<body class="text-gray-800 min-h-screen flex flex-col items-center p-2">
+<body class="text-gray-800 min-h-screen flex flex-col items-center p-1">
 
     <!-- Header -->
-    <header class="text-center mb-2 w-full max-w-4xl">
-        <h1 class="text-2xl md:text-3xl font-bold text-blue-800 mb-1">Atomic Size & Structure</h1>
-        <p class="text-gray-600 text-sm md:text-base">Explore how proton count and electron shells affect atomic radius.</p>
+    <header class="text-center mb-1 w-full max-w-4xl">
+        <h1 class="text-xl md:text-2xl font-bold text-blue-800 mb-0">Atomic Size & Structure</h1>
+        <p class="text-gray-600 text-xs">Explore how proton count and electron shells affect atomic radius.</p>
     </header>
 
     <!-- Main Dashboard -->
@@ -57,8 +57,8 @@
         
         <!-- Left Panel: Atom Visualization -->
         <div class="w-full lg:w-1/2 p-2 border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col items-center justify-center bg-gray-50 relative">
-            <h2 class="text-lg font-semibold mb-2 text-gray-700">Atom Model</h2>
-            <!-- Expanded max width for visualization -->
+            <h2 class="text-base font-semibold mb-1 text-gray-700">Atom Model</h2>
+            <!-- Expanded max width for visualization, but tight container -->
             <div class="relative w-full aspect-square max-w-[400px]">
                 <canvas id="atomCanvas" width="400" height="400" class="w-full h-full"></canvas>
                 <!-- Symbol Overlay -->
@@ -66,9 +66,9 @@
             </div>
             
             <!-- Legend -->
-            <div class="flex gap-4 mt-2 text-xs text-gray-500">
-                <div class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 mr-2"></span> Electron (-)</div>
-                <div class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-red-600 mr-2"></span> Nucleus (p+/n0)</div>
+            <div class="flex gap-4 mt-1 text-xs text-gray-500">
+                <div class="flex items-center"><span class="w-2 h-2 rounded-full bg-blue-500 mr-1.5"></span> e-</div>
+                <div class="flex items-center"><span class="w-2 h-2 rounded-full bg-red-600 mr-1.5"></span> Nucleus</div>
             </div>
         </div>
 
@@ -76,47 +76,46 @@
         <div class="w-full lg:w-1/2 p-2 flex flex-col">
             
             <!-- Controls -->
-            <div class="mb-2 bg-blue-50 p-2 rounded-xl border border-blue-100">
-                <label for="zSlider" class="flex justify-between font-bold text-gray-700 mb-1 text-sm">
-                    <span>Select Atomic Number (Z)</span>
-                    <span id="zDisplay" class="text-blue-600 text-lg">1</span>
+            <div class="mb-1 bg-blue-50 p-2 rounded-xl border border-blue-100">
+                <label for="zSlider" class="flex justify-between font-bold text-gray-700 mb-1 text-xs">
+                    <span>Atomic Number (Z)</span>
+                    <span id="zDisplay" class="text-blue-600 text-base">1</span>
                 </label>
-                <input type="range" min="1" max="37" value="1" class="range-slider mb-2" id="zSlider">
+                <input type="range" min="1" max="37" value="1" class="range-slider mb-1" id="zSlider">
                 
-                <div class="flex justify-between mt-1">
-                    <button id="prevBtn" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-semibold py-1 px-3 text-xs rounded shadow-sm transition">Prev</button>
-                    <button id="nextBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1 px-3 text-xs rounded shadow-md transition">Next</button>
+                <div class="flex justify-between mt-0.5">
+                    <button id="prevBtn" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-semibold py-0.5 px-2 text-xs rounded shadow-sm transition">Prev</button>
+                    <button id="nextBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-0.5 px-2 text-xs rounded shadow-md transition">Next</button>
                 </div>
             </div>
 
             <!-- Explanation Box -->
-            <!-- Reduced padding, margin and height -->
-            <div id="explanationBox" class="mb-2 p-2 rounded-xl bg-yellow-50 border border-yellow-200 transition-all duration-300">
-                <h3 class="font-bold text-base text-yellow-800 mb-1" id="infoTitle">Hydrogen</h3>
-                <!-- Reduced fixed height to h-20 -->
-                <p class="text-gray-700 text-xs leading-relaxed h-20 flex flex-col justify-center" id="infoText">
+            <div id="explanationBox" class="mb-1 p-2 rounded-xl bg-yellow-50 border border-yellow-200 transition-all duration-300">
+                <h3 class="font-bold text-sm text-yellow-800 mb-0.5" id="infoTitle">Hydrogen</h3>
+                <!-- Reduced fixed height to h-16 (4rem/64px) -->
+                <p class="text-gray-700 text-xs leading-tight h-16 flex flex-col justify-center" id="infoText">
                     Start by moving the slider to see how size changes.
                 </p>
-                <div class="grid grid-cols-3 gap-2 mt-2 text-center text-xs">
-                    <div class="bg-white p-1.5 rounded shadow-sm">
-                        <div class="text-[10px] text-gray-500">Protons</div>
-                        <div class="font-bold text-blue-600" id="statP">1</div>
+                <div class="grid grid-cols-3 gap-1 mt-1 text-center text-xs">
+                    <div class="bg-white p-1 rounded shadow-sm">
+                        <div class="text-[9px] text-gray-500">Protons</div>
+                        <div class="font-bold text-blue-600 text-xs" id="statP">1</div>
                     </div>
-                    <div class="bg-white p-1.5 rounded shadow-sm">
-                        <div class="text-[10px] text-gray-500">Electrons</div>
-                        <div class="font-bold text-blue-600" id="statE">1</div>
+                    <div class="bg-white p-1 rounded shadow-sm">
+                        <div class="text-[9px] text-gray-500">Electrons</div>
+                        <div class="font-bold text-blue-600 text-xs" id="statE">1</div>
                     </div>
-                    <div class="bg-white p-1.5 rounded shadow-sm">
-                        <div class="text-[10px] text-gray-500">Radius (pm)</div>
-                        <div class="font-bold text-blue-600" id="statR">53</div>
+                    <div class="bg-white p-1 rounded shadow-sm">
+                        <div class="text-[9px] text-gray-500">Radius (pm)</div>
+                        <div class="font-bold text-blue-600 text-xs" id="statR">53</div>
                     </div>
                 </div>
             </div>
 
             <!-- Graph Area -->
-            <!-- Reduced min-height to 140px -->
-            <div class="flex-grow flex flex-col min-h-[140px]">
-                <h3 class="text-xs font-bold uppercase text-gray-400 mb-1 tracking-wide">Atomic Radius Trend</h3>
+            <!-- Reduced min-height to 120px -->
+            <div class="flex-grow flex flex-col min-h-[120px]">
+                <h3 class="text-[10px] font-bold uppercase text-gray-400 mb-0.5 tracking-wide">Atomic Radius Trend</h3>
                 <div class="relative w-full flex-grow border border-gray-200 rounded bg-white">
                     <canvas id="graphCanvas" class="w-full h-full"></canvas>
                 </div>
@@ -125,8 +124,8 @@
     </div>
 
     <!-- Instructions Footer -->
-    <div class="mt-2 max-w-3xl text-gray-500 text-xs text-center">
-        <p><strong>Note:</strong> Atom visualization uses Bohr model orbits for clarity. Real atoms have electron clouds.</p>
+    <div class="mt-1 max-w-3xl text-gray-500 text-[10px] text-center">
+        <p><strong>Note:</strong> Uses Bohr model for clarity. Real atoms have electron clouds.</p>
     </div>
 
     <script>
@@ -260,12 +259,12 @@
                 // Check if we started a new shell (Alkali Metals usually)
                 if (el.config.length > prevEl.config.length) {
                     explanation = `<strong>MASSIVE SPIKE IN SIZE!</strong> <br> We just added an electron to a <strong>new, empty shell</strong> further from the nucleus. <br>Even though protons increased, the new shell pushes the boundary way out.`;
-                    explanationBox.className = "mb-2 p-2 rounded-xl border transition-all duration-300 bg-red-50 border-red-200";
+                    explanationBox.className = "mb-1 p-2 rounded-xl border transition-all duration-300 bg-red-50 border-red-200";
                 } 
                 // Check contraction (Same shell count, but Z increased)
                 else {
                     explanation = `<strong>CONTRACTION (Getting Smaller)</strong> <br> We added a proton (p+) and an electron (e-), but the electron went into the <em>same</em> shell. <br>The extra proton pulls ALL the electrons in tighter due to increased attractive force.`;
-                    explanationBox.className = "mb-2 p-2 rounded-xl border transition-all duration-300 bg-blue-50 border-blue-200";
+                    explanationBox.className = "mb-1 p-2 rounded-xl border transition-all duration-300 bg-blue-50 border-blue-200";
                 }
             }
             infoText.innerHTML = explanation;
@@ -342,7 +341,7 @@
             ctxGraph.clearRect(0, 0, width, height);
             
             // Margins
-            const padding = 25; // Smaller padding
+            const padding = 20; // Tighter padding
             const chartW = width - padding * 2;
             const chartH = height - padding * 2;
 
@@ -387,21 +386,21 @@
                 
                 // Highlight current
                 if (index === currentIndex) {
-                    ctxGraph.arc(x, y, 6, 0, Math.PI * 2); // Smaller highlight
+                    ctxGraph.arc(x, y, 5, 0, Math.PI * 2); // Smaller highlight
                     ctxGraph.fillStyle = "#2563eb"; 
                     ctxGraph.fill();
                     ctxGraph.strokeStyle = "#fff";
-                    ctxGraph.lineWidth = 2;
+                    ctxGraph.lineWidth = 1.5;
                     ctxGraph.stroke();
                     
                     // Add Label for current
                     ctxGraph.fillStyle = "#1e3a8a";
-                    ctxGraph.font = "bold 10px Arial";
-                    ctxGraph.fillText(`${el.radius}pm`, x + 8, y);
+                    ctxGraph.font = "bold 9px Arial";
+                    ctxGraph.fillText(`${el.radius}pm`, x + 6, y);
                 } else {
                     const isPeak = (el.config.length > (elements[index-1]?.config.length || 0));
                     
-                    ctxGraph.arc(x, y, 2.5, 0, Math.PI * 2); // Smaller dots
+                    ctxGraph.arc(x, y, 2, 0, Math.PI * 2); // Smaller dots
                     ctxGraph.fillStyle = isPeak ? "#ef4444" : "#64748b"; 
                     ctxGraph.fill();
                 }
@@ -409,11 +408,11 @@
             
             // Draw axis labels
             ctxGraph.fillStyle = "#64748b";
-            ctxGraph.font = "9px Arial";
-            ctxGraph.fillText("Atomic #", width/2 - 20, height - 5);
+            ctxGraph.font = "8px Arial";
+            ctxGraph.fillText("Atomic #", width/2 - 15, height - 5);
             
             ctxGraph.save();
-            ctxGraph.translate(10, height/2 + 20);
+            ctxGraph.translate(8, height/2 + 15);
             ctxGraph.rotate(-Math.PI/2);
             ctxGraph.fillText("Radius", 0, 0);
             ctxGraph.restore();
